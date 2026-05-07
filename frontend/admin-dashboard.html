@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Student Self-Service Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Portal</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" onclick="showSection('add-student')">➕ Add Student</button>
+                <button class="nav-btn" onclick="showSection('add-parent')">➕ Add Parent</button>
+                <button class="nav-btn" onclick="showSection('manage-exams')">📝 Manage Exams</button>
+                <button class="nav-btn" onclick="showSection('manage-requests')">📄 Manage Requests</button>
+                <button class="nav-btn" onclick="showSection('approve-rechecking')">✅ Approve Rechecking</button>
+                <button class="nav-btn logout" onclick="logout()">🚪 Logout</button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1>Admin Dashboard</h1>
+                <p id="userName">Welcome</p>
+            </div>
+
+            <!-- Add Student Section -->
+            <section id="add-student" class="content-section">
+                <h2>➕ Add Student</h2>
+                <form id="studentForm" onsubmit="addStudent(event)">
+                    <div class="form-group">
+                        <label for="studentUsername">Username:</label>
+                        <input type="text" id="studentUsername" name="studentUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentPassword">Password:</label>
+                        <input type="password" id="studentPassword" name="studentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentEmail">Email:</label>
+                        <input type="email" id="studentEmail" name="studentEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentName">Full Name:</label>
+                        <input type="text" id="studentName" name="studentName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rollNumber">Roll Number:</label>
+                        <input type="text" id="rollNumber" name="rollNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="grade">Grade:</label>
+                        <input type="text" id="grade" name="grade" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </form>
+            </section>
+
+            <!-- Add Parent Section -->
+            <section id="add-parent" class="content-section hidden">
+                <h2>➕ Add Parent</h2>
+                <form id="parentForm" onsubmit="addParent(event)">
+                    <div class="form-group">
+                        <label for="parentUsername">Username:</label>
+                        <input type="text" id="parentUsername" name="parentUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentPassword">Password:</label>
+                        <input type="password" id="parentPassword" name="parentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentEmail">Email:</label>
+                        <input type="email" id="parentEmail" name="parentEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parentName">Full Name:</label>
+                        <input type="text" id="parentName" name="parentName" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Parent</button>
+                </form>
+            </section>
+
+            <!-- Manage Exams Section -->
+            <section id="manage-exams" class="content-section hidden">
+                <h2>📝 Manage Exams</h2>
+                <form id="examForm" onsubmit="createExam(event)">
+                    <div class="form-group">
+                        <label for="examName">Exam Name:</label>
+                        <input type="text" id="examName" name="examName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examDate">Date:</label>
+                        <input type="date" id="examDate" name="examDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examSubject">Subject:</label>
+                        <input type="text" id="examSubject" name="examSubject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examTotalMarks">Total Marks:</label>
+                        <input type="number" id="examTotalMarks" name="examTotalMarks" value="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examDuration">Duration (e.g., 2 hours):</label>
+                        <input type="text" id="examDuration" name="examDuration" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Exam</button>
+                </form>
+
+                <h3>Current Exams</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Total Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examsBody">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Manage Document Requests Section -->
+            <section id="manage-requests" class="content-section hidden">
+                <h2>📄 Manage Document Requests</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Document Type</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Applied Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsManageBody">
+                        <tr><td colspan="6">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Approve Rechecking Section -->
+            <section id="approve-rechecking" class="content-section hidden">
+                <h2>✅ Approve Rechecking Requests</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Applied Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recheckingBody">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let currentUser = null;
+        let adminId = null;
+
+        // Initialize
+        window.addEventListener('load', function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            adminId = currentUser.id;
+            document.getElementById('userName').textContent = `Welcome, ${currentUser.name}`;
+
+            loadExams();
+            loadRecheckingRequests();
+            loadManageRequests();
+        });
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function addStudent(event) {
+            event.preventDefault();
+
+            const data = {
+                username: document.getElementById('studentUsername').value,
+                password: document.getElementById('studentPassword').value,
+                email: document.getElementById('studentEmail').value,
+                name: document.getElementById('studentName').value,
+                rollNumber: document.getElementById('rollNumber').value,
+                grade: document.getElementById('grade').value,
+                phone: document.getElementById('phone').value,
+                parentId: null
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/add-student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Student added successfully!');
+                document.getElementById('studentForm').reset();
+            } catch (error) {
+                console.error('Error adding student:', error);
+                alert('Error adding student');
+            }
+        }
+
+        async function addParent(event) {
+            event.preventDefault();
+
+            const data = {
+                username: document.getElementById('parentUsername').value,
+                password: document.getElementById('parentPassword').value,
+                email: document.getElementById('parentEmail').value,
+                name: document.getElementById('parentName').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/add-parent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Parent added successfully!');
+                document.getElementById('parentForm').reset();
+            } catch (error) {
+                console.error('Error adding parent:', error);
+                alert('Error adding parent');
+            }
+        }
+
+        async function createExam(event) {
+            event.preventDefault();
+
+            const data = {
+                name: document.getElementById('examName').value,
+                date: document.getElementById('examDate').value,
+                subject: document.getElementById('examSubject').value,
+                totalMarks: parseInt(document.getElementById('examTotalMarks').value),
+                duration: document.getElementById('examDuration').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/create-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Exam created successfully!');
+                document.getElementById('examForm').reset();
+                loadExams();
+            } catch (error) {
+                console.error('Error creating exam:', error);
+                alert('Error creating exam');
+            }
+        }
+
+        async function loadExams() {
+            try {
+                const response = await fetch('http://localhost:5000/api/exams');
+                const exams = await response.json();
+                const tbody = document.getElementById('examsBody');
+                tbody.innerHTML = '';
+
+                if (exams.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No exams available</td></tr>';
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const row = `<tr>
+                        <td>${exam.name}</td>
+                        <td>${exam.subject}</td>
+                        <td>${new Date(exam.date).toLocaleDateString()}</td>
+                        <td>${exam.totalMarks}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading exams:', error);
+                document.getElementById('examsBody').innerHTML = '<tr><td colspan="4">Error loading exams</td></tr>';
+            }
+        }
+
+        async function loadRecheckingRequests() {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/rechecking-requests');
+                const requests = await response.json();
+                const tbody = document.getElementById('recheckingBody');
+                tbody.innerHTML = '';
+
+                if (requests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No rechecking requests</td></tr>';
+                    return;
+                }
+
+                requests.forEach(req => {
+                    const row = `<tr>
+                        <td>${req.studentId}</td>
+                        <td>${req.reason}</td>
+                        <td><span class="status ${req.status}">${req.status}</span></td>
+                        <td>${new Date(req.appliedAt).toLocaleDateString()}</td>
+                        <td>
+                            <button onclick="approveRechecking('${req._id}', 'approved')" class="btn btn-small">Approve</button>
+                            <button onclick="approveRechecking('${req._id}', 'rejected')" class="btn btn-small btn-danger">Reject</button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading rechecking requests:', error);
+                document.getElementById('recheckingBody').innerHTML = '<tr><td colspan="5">Error loading requests</td></tr>';
+            }
+        }
+
+        async function approveRechecking(recheckingId, status) {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/approve-rechecking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recheckingId,
+                        status,
+                        approvedBy: adminId
+                    })
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Rechecking updated successfully!');
+                loadRecheckingRequests();
+            } catch (error) {
+                console.error('Error updating rechecking:', error);
+                alert('Error updating rechecking');
+            }
+        }
+
+        async function loadManageRequests() {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/all-requests');
+                const requests = await response.json();
+                const tbody = document.getElementById('requestsManageBody');
+                tbody.innerHTML = '';
+
+                if (requests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">No document requests</td></tr>';
+                    return;
+                }
+
+                requests.forEach(req => {
+                    const docType = req.requestType.replace('-', ' ').toUpperCase();
+                    const studentId = req.studentId ? req.studentId._id : 'Unknown';
+                    const row = `<tr>
+                        <td>${studentId}</td>
+                        <td>${docType}</td>
+                        <td>${req.description}</td>
+                        <td><span class="status ${req.status}">${req.status}</span></td>
+                        <td>${new Date(req.appliedAt).toLocaleDateString()}</td>
+                        <td>
+                            ${req.status === 'pending' ? `
+                                <button onclick="approveRequest('${req._id}')" class="btn btn-small">Approve</button>
+                                <button onclick="rejectRequest('${req._id}')" class="btn btn-small btn-danger">Reject</button>
+                            ` : `<span class="status-text">${req.status}</span>`}
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                document.getElementById('requestsManageBody').innerHTML = '<tr><td colspan="6">Error loading requests</td></tr>';
+            }
+        }
+
+        async function approveRequest(requestId) {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/approve-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId,
+                        approvedBy: adminId
+                    })
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Request approved successfully!');
+                loadManageRequests();
+            } catch (error) {
+                console.error('Error approving request:', error);
+                alert('Error approving request');
+            }
+        }
+
+        async function rejectRequest(requestId) {
+            const reason = prompt('Enter reason for rejection:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/reject-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId,
+                        rejectionReason: reason,
+                        approvedBy: adminId
+                    })
+                });
+
+                const result = await response.json();
+                alert(result.message || 'Request rejected!');
+                loadManageRequests();
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                alert('Error rejecting request');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

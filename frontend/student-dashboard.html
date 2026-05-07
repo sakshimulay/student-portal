@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Student Self-Service Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Student Portal</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" onclick="showSection('attendance')">📋 Attendance</button>
+                <button class="nav-btn" onclick="showSection('results')">📊 Results</button>
+                <button class="nav-btn" onclick="showSection('fees')">💰 Fees</button>
+                <button class="nav-btn" onclick="showSection('exams')">📝 Register Exam</button>
+                <button class="nav-btn" onclick="showSection('admit-card')">🎫 Admit Card</button>
+                <button class="nav-btn" onclick="showSection('rechecking')">🔄 Rechecking</button>
+                <button class="nav-btn" onclick="showSection('requests')">📄 Document Requests</button>
+                <button class="nav-btn" onclick="showSection('notices')">📢 Notices</button>
+                <button class="nav-btn logout" onclick="logout()">🚪 Logout</button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1>Student Dashboard</h1>
+                <p id="userName">Welcome</p>
+            </div>
+
+            <!-- Attendance Section -->
+            <section id="attendance" class="content-section">
+                <h2>📋 Attendance</h2>
+                <table id="attendanceTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody">
+                        <tr><td colspan="3">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results" class="content-section hidden">
+                <h2>📊 Results</h2>
+                <table id="resultsTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Fees Section -->
+            <section id="fees" class="content-section hidden">
+                <h2>💰 Fees</h2>
+                <table id="feesTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesBody">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Exams Section -->
+            <section id="exams" class="content-section hidden">
+                <h2>📝 Register for Exam</h2>
+                <div id="examsContainer">
+                    <p>Loading exams...</p>
+                </div>
+            </section>
+
+            <!-- Admit Card Section -->
+            <section id="admit-card" class="content-section hidden">
+                <h2>🎫 Admit Card</h2>
+                <div id="admitCardContainer">
+                    <p>Select an exam to download admit card:</p>
+                    <select id="examSelect" onchange="generateAdmitCard()">
+                        <option value="">-- Select Exam --</option>
+                    </select>
+                    <button onclick="downloadAdmitCard()" class="btn btn-primary" style="margin-top: 10px;">Download</button>
+                    <div id="admitCardOutput"></div>
+                </div>
+            </section>
+
+            <!-- Rechecking Section -->
+            <section id="rechecking" class="content-section hidden">
+                <h2>🔄 Apply for Rechecking</h2>
+                <form id="recheckingForm" onsubmit="submitRechecking(event)">
+                    <div class="form-group">
+                        <label for="resultSelect">Select Result:</label>
+                        <select id="resultSelect" required>
+                            <option value="">-- Select Result --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for Rechecking:</label>
+                        <textarea id="reason" name="reason" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+                <div id="recheckingStatus">
+                    <h3>Your Rechecking Requests:</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Applied Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recheckingBody">
+                            <tr><td colspan="3">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Document Requests Section -->
+            <section id="requests" class="content-section hidden">
+                <h2>📄 Self-Service Document Requests</h2>
+                <form id="requestForm" onsubmit="submitRequest(event)">
+                    <div class="form-group">
+                        <label for="requestType">Document Type:</label>
+                        <select id="requestType" required>
+                            <option value="">-- Select Document --</option>
+                            <option value="bonafide">Bonafide Certificate</option>
+                            <option value="transcript">Transcript</option>
+                            <option value="id-card">ID Card</option>
+                            <option value="other">Other Document</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="requestDescription">Purpose/Description:</label>
+                        <textarea id="requestDescription" name="requestDescription" placeholder="Why do you need this document?" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+                <div id="requestStatus">
+                    <h3>Your Document Requests:</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Document Type</th>
+                                <th>Status</th>
+                                <th>Applied Date</th>
+                                <th>Approved Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsBody">
+                            <tr><td colspan="4">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Notices Section -->
+            <section id="notices" class="content-section hidden">
+                <h2>📢 Notices</h2>
+                <div id="noticesContainer">
+                    <p>Loading notices...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let currentUser = null;
+        let studentId = null;
+        let results = [];
+
+        // Initialize
+        window.addEventListener('load', function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'student') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            studentId = currentUser.linkedStudentId;
+            document.getElementById('userName').textContent = `Welcome, ${currentUser.name}`;
+
+            loadAttendance();
+            loadResults();
+            loadFees();
+            loadExams();
+            loadAdmitCards();
+            loadRechecking();
+            loadNotices();
+            loadRequests();
+        });
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function loadAttendance() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/attendance`);
+                const attendance = await response.json();
+                const tbody = document.getElementById('attendanceBody');
+                tbody.innerHTML = '';
+
+                if (attendance.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No attendance records</td></tr>';
+                    return;
+                }
+
+                attendance.forEach(record => {
+                    const row = `<tr>
+                        <td>${new Date(record.date).toLocaleDateString()}</td>
+                        <td>${record.subject}</td>
+                        <td><span class="status ${record.status}">${record.status}</span></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+                document.getElementById('attendanceBody').innerHTML = '<tr><td colspan="3">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/results`);
+                results = await response.json();
+                const tbody = document.getElementById('resultsBody');
+                tbody.innerHTML = '';
+
+                if (results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No results available</td></tr>';
+                    return;
+                }
+
+                results.forEach(result => {
+                    const row = `<tr>
+                        <td>${result.subject}</td>
+                        <td>${result.marks}/${result.totalMarks}</td>
+                        <td>${result.percentage.toFixed(2)}%</td>
+                        <td>${result.grade}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                // Populate rechecking select
+                const select = document.getElementById('resultSelect');
+                results.forEach(result => {
+                    const option = document.createElement('option');
+                    option.value = result._id;
+                    option.textContent = result.subject;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsBody').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadFees() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/fees`);
+                const fees = await response.json();
+                const tbody = document.getElementById('feesBody');
+                tbody.innerHTML = '';
+
+                if (fees.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No fee records</td></tr>';
+                    return;
+                }
+
+                fees.forEach(fee => {
+                    const row = `<tr>
+                        <td>${fee.month}</td>
+                        <td>Rs. ${fee.amount}</td>
+                        <td><span class="status ${fee.status}">${fee.status}</span></td>
+                        <td>${new Date(fee.dueDate).toLocaleDateString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading fees:', error);
+                document.getElementById('feesBody').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadExams() {
+            try {
+                const response = await fetch('http://localhost:5000/api/exams');
+                const exams = await response.json();
+                const container = document.getElementById('examsContainer');
+                container.innerHTML = '';
+
+                if (exams.length === 0) {
+                    container.innerHTML = '<p>No exams available</p>';
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const div = document.createElement('div');
+                    div.className = 'exam-card';
+                    div.innerHTML = `
+                        <h3>${exam.name}</h3>
+                        <p><strong>Subject:</strong> ${exam.subject}</p>
+                        <p><strong>Date:</strong> ${new Date(exam.date).toLocaleDateString()}</p>
+                        <p><strong>Duration:</strong> ${exam.duration}</p>
+                        <p><strong>Total Marks:</strong> ${exam.totalMarks}</p>
+                        <button onclick="registerExam('${exam._id}')" class="btn btn-primary">Register</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Also populate admit card select
+                const select = document.getElementById('examSelect');
+                exams.forEach(exam => {
+                    const option = document.createElement('option');
+                    option.value = exam._id;
+                    option.textContent = `${exam.name} - ${exam.subject}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading exams:', error);
+                document.getElementById('examsContainer').innerHTML = '<p>Error loading exams</p>';
+            }
+        }
+
+        async function registerExam(examId) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/register-exam`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId })
+                });
+                const data = await response.json();
+                alert(data.message || 'Exam registered successfully!');
+                loadExams();
+            } catch (error) {
+                console.error('Error registering exam:', error);
+                alert('Error registering exam');
+            }
+        }
+
+        async function loadAdmitCards() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/admit-cards`);
+                const admitCards = await response.json();
+            } catch (error) {
+                console.error('Error loading admit cards:', error);
+            }
+        }
+
+        function generateAdmitCard() {
+            const examId = document.getElementById('examSelect').value;
+            if (examId) {
+                // Just prepare for download
+            }
+        }
+
+        async function downloadAdmitCard() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                alert('Please select an exam');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/download-admit-card`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const output = document.getElementById('admitCardOutput');
+                    output.innerHTML = `
+                        <div class="admit-card">
+                            <h3>ADMIT CARD</h3>
+                            <p><strong>Roll Number:</strong> ${data.admitCard.rollNumber}</p>
+                            <p><strong>Exam:</strong> ${data.admitCard.examName}</p>
+                            <p><strong>Date:</strong> ${new Date(data.admitCard.examDate).toLocaleDateString()}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error downloading admit card:', error);
+                alert('Error downloading admit card');
+            }
+        }
+
+        async function loadRechecking() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/rechecking`);
+                const rechecking = await response.json();
+                const tbody = document.getElementById('recheckingBody');
+                tbody.innerHTML = '';
+
+                if (rechecking.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No rechecking requests</td></tr>';
+                    return;
+                }
+
+                rechecking.forEach(req => {
+                    const row = `<tr>
+                        <td>Result</td>
+                        <td><span class="status ${req.status}">${req.status}</span></td>
+                        <td>${new Date(req.appliedAt).toLocaleDateString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading rechecking:', error);
+            }
+        }
+
+        async function submitRechecking(event) {
+            event.preventDefault();
+            const resultId = document.getElementById('resultSelect').value;
+            const reason = document.getElementById('reason').value;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/apply-rechecking`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resultId, reason })
+                });
+                const data = await response.json();
+                alert(data.message || 'Rechecking request submitted!');
+                document.getElementById('recheckingForm').reset();
+                loadRechecking();
+            } catch (error) {
+                console.error('Error submitting rechecking:', error);
+                alert('Error submitting rechecking request');
+            }
+        }
+
+        async function loadNotices() {
+            try {
+                const response = await fetch('http://localhost:5000/api/notices');
+                const notices = await response.json();
+                const container = document.getElementById('noticesContainer');
+                container.innerHTML = '';
+
+                if (notices.length === 0) {
+                    container.innerHTML = '<p>No notices available</p>';
+                    return;
+                }
+
+                notices.forEach(notice => {
+                    const div = document.createElement('div');
+                    div.className = 'notice-card';
+                    div.innerHTML = `
+                        <h3>${notice.title}</h3>
+                        <p>${notice.content}</p>
+                        <small>${new Date(notice.createdAt).toLocaleDateString()}</small>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading notices:', error);
+                document.getElementById('noticesContainer').innerHTML = '<p>Error loading notices</p>';
+            }
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/requests`);
+                const requests = await response.json();
+                const tbody = document.getElementById('requestsBody');
+                tbody.innerHTML = '';
+
+                if (requests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No document requests yet</td></tr>';
+                    return;
+                }
+
+                requests.forEach(req => {
+                    const docType = req.requestType.replace('-', ' ').toUpperCase();
+                    const approvedDate = req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : '-';
+                    const row = `<tr>
+                        <td>${docType}</td>
+                        <td><span class="status ${req.status}">${req.status}</span></td>
+                        <td>${new Date(req.appliedAt).toLocaleDateString()}</td>
+                        <td>${approvedDate}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                document.getElementById('requestsBody').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+            }
+        }
+
+        async function submitRequest(event) {
+            event.preventDefault();
+            const requestType = document.getElementById('requestType').value;
+            const description = document.getElementById('requestDescription').value;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/student/${studentId}/create-request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ requestType, description })
+                });
+                const data = await response.json();
+                alert(data.message || 'Request submitted successfully!');
+                document.getElementById('requestForm').reset();
+                loadRequests();
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                alert('Error submitting request');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

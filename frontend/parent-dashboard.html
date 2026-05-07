@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - Student Self-Service Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Parent Portal</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" onclick="showSection('student-attendance')">📋 Attendance</button>
+                <button class="nav-btn" onclick="showSection('student-results')">📊 Results</button>
+                <button class="nav-btn" onclick="showSection('student-fees')">💰 Fees</button>
+                <button class="nav-btn" onclick="showSection('student-notices')">📢 Notices</button>
+                <button class="nav-btn logout" onclick="logout()">🚪 Logout</button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1>Parent Dashboard</h1>
+                <p id="userName">Welcome</p>
+            </div>
+
+            <!-- Student Attendance Section -->
+            <section id="student-attendance" class="content-section">
+                <h2>📋 Student Attendance</h2>
+                <table id="attendanceTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody">
+                        <tr><td colspan="3">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Student Results Section -->
+            <section id="student-results" class="content-section hidden">
+                <h2>📊 Student Results</h2>
+                <table id="resultsTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Student Fees Section -->
+            <section id="student-fees" class="content-section hidden">
+                <h2>💰 Student Fees</h2>
+                <table id="feesTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesBody">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Student Notices Section -->
+            <section id="student-notices" class="content-section hidden">
+                <h2>📢 Notices</h2>
+                <div id="noticesContainer">
+                    <p>Loading notices...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let currentUser = null;
+        let parentId = null;
+
+        // Initialize
+        window.addEventListener('load', function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'parent') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            parentId = currentUser.id;
+            document.getElementById('userName').textContent = `Welcome, ${currentUser.name}`;
+
+            loadStudentAttendance();
+            loadStudentResults();
+            loadStudentFees();
+            loadNotices();
+        });
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function loadStudentAttendance() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/parent/${parentId}/student-attendance`);
+                const attendance = await response.json();
+                const tbody = document.getElementById('attendanceBody');
+                tbody.innerHTML = '';
+
+                if (attendance.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No attendance records</td></tr>';
+                    return;
+                }
+
+                attendance.forEach(record => {
+                    const row = `<tr>
+                        <td>${new Date(record.date).toLocaleDateString()}</td>
+                        <td>${record.subject}</td>
+                        <td><span class="status ${record.status}">${record.status}</span></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+                document.getElementById('attendanceBody').innerHTML = '<tr><td colspan="3">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadStudentResults() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/parent/${parentId}/student-results`);
+                const results = await response.json();
+                const tbody = document.getElementById('resultsBody');
+                tbody.innerHTML = '';
+
+                if (results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No results available</td></tr>';
+                    return;
+                }
+
+                results.forEach(result => {
+                    const row = `<tr>
+                        <td>${result.subject}</td>
+                        <td>${result.marks}/${result.totalMarks}</td>
+                        <td>${result.percentage.toFixed(2)}%</td>
+                        <td>${result.grade}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsBody').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadStudentFees() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/parent/${parentId}/student-fees`);
+                const fees = await response.json();
+                const tbody = document.getElementById('feesBody');
+                tbody.innerHTML = '';
+
+                if (fees.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No fee records</td></tr>';
+                    return;
+                }
+
+                fees.forEach(fee => {
+                    const row = `<tr>
+                        <td>${fee.month}</td>
+                        <td>Rs. ${fee.amount}</td>
+                        <td><span class="status ${fee.status}">${fee.status}</span></td>
+                        <td>${new Date(fee.dueDate).toLocaleDateString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading fees:', error);
+                document.getElementById('feesBody').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+            }
+        }
+
+        async function loadNotices() {
+            try {
+                const response = await fetch('http://localhost:5000/api/parent/notices');
+                const notices = await response.json();
+                const container = document.getElementById('noticesContainer');
+                container.innerHTML = '';
+
+                if (notices.length === 0) {
+                    container.innerHTML = '<p>No notices available</p>';
+                    return;
+                }
+
+                notices.forEach(notice => {
+                    const div = document.createElement('div');
+                    div.className = 'notice-card';
+                    div.innerHTML = `
+                        <h3>${notice.title}</h3>
+                        <p>${notice.content}</p>
+                        <small>${new Date(notice.createdAt).toLocaleDateString()}</small>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading notices:', error);
+                document.getElementById('noticesContainer').innerHTML = '<p>Error loading notices</p>';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
